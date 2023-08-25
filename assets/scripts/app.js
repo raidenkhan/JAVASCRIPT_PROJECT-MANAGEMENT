@@ -1,4 +1,8 @@
+class DOMHelper{
 
+    
+
+}
 class ProjectItem{
     constructor(id,updateProjectHandlerFxn)
     {
@@ -9,7 +13,7 @@ class ProjectItem{
     connectSwitchBtn()
     {
         const switchBtn=document.querySelector(`#${this.id} button:last-of-type`);
-        switchBtn.addEventListener('click',this.updateProjectHandlerFxn)
+        switchBtn.addEventListener('click',this.updateProjectHandlerFxn.bind(this,this.id))
     }
 
 }
@@ -25,11 +29,13 @@ class ProjectList
         this.name=name;
         
         const allProjs=document.querySelectorAll(`#${name}-projects li`);
+        
 
        for(const proj of allProjs){
         this.Projects.push(new ProjectItem(proj.id,this.swichProjectHandler.bind(this)));
         
        }
+       
 
     
     }
@@ -37,19 +43,24 @@ class ProjectList
     switchHandlerOutside(switchHandler){
         this.switchHandler=switchHandler;
     }
-    addProjectHandler()
+    addProjectHandler(project)
     {
         
-        this.Projects.push(this.ProjectItem)
+        this.Projects.push(project)
         console.log(this.Projects)
+
+        
     }
     
     
     swichProjectHandler(projectId)
        {
-        this.Projects=this.Projects.filter(p=>p.id!==projectId);
         
         this.switchHandler(this.Projects.find(p=>p.id==projectId))
+    
+        this.Projects=this.Projects.filter(p=>p.id!==projectId);
+    
+       
         
         
        }
