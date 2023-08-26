@@ -1,83 +1,96 @@
-class DOMHelper{
 
-    
+class DOMHelper
+{
+    static removeEventListners(domElement)
+    {
+        const newEl=document.cloneNode(domElement);
+        domElement=newEl;
+        return newEl;
+    }
+    static moveElement(sourceId,destId)
+    {
+        const sourceEl=document.getElementById(`${sourceId}`);
+        const destinatContainer=document.querySelector(`#${destId}-projects ul`);
+        
+        destinatContainer.append(sourceEl);
 
+    }
 }
+class Tooltip{}
 class ProjectItem{
-    constructor(id,updateProjectHandlerFxn)
+    constructor(id,switchProjectItemFxn)
     {
         this.id=id;
-        this.updateProjectHandlerFxn=updateProjectHandlerFxn;
-        this.connectSwitchBtn();
+        this.updateSwitchHandler=switchProjectItemFxn;
+        this.connectSwitchBtn()
+
     }
+
+    ///CONNECT SWITCH BUTTON
     connectSwitchBtn()
+
     {
-        const switchBtn=document.querySelector(`#${this.id} button:last-of-type`);
-        switchBtn.addEventListener('click',this.updateProjectHandlerFxn.bind(this,this.id))
+        let switchBtn=document.querySelector(`#${this.id} button:last-of-type`)
+        switchBtn.addEventListener('click',this.updateSwitchHandler.bind(null,this.id))
+        switchBtn=DOMHelper.removeEventListners(switchBtn);
+        
+        switchBtn.innerHTML=switchBtn.innerHTML=='Activate'?'Finish':'Activate'
+        
     }
+    update(updateSwitchHandler)
+    {
+        this.updateSwitchHandler=updateSwitchHandler;
+        this.connectSwitchBtn()
+
+    }
+
 
 }
-
 class ProjectList
 {
-
     Projects=[];
-   
-    constructor(name)
+constructor(type){
+    this.type=type;
+    const allProjects=document.querySelectorAll(`#${type}-projects li`);
+    for(const proj of allProjects)
     {
-        
-        this.name=name;
-        
-        const allProjs=document.querySelectorAll(`#${name}-projects li`);
-        
+        this.Projects.push(new ProjectItem(proj.id,this.switchProject.bind(this)));
 
-       for(const proj of allProjs){
-        this.Projects.push(new ProjectItem(proj.id,this.swichProjectHandler.bind(this)));
-        
-       }
-       
-
-    
     }
 
-    switchHandlerOutside(switchHandler){
-        this.switchHandler=switchHandler;
-    }
-    addProjectHandler(project)
+}
+//logic to add project after switching
+    addProject(project)
     {
-        
         this.Projects.push(project)
-        console.log(this.Projects)
-
+        DOMHelper.moveElement(project.id,this.type);
+        project.update(this.switchProject.bind(this,project.id));
+     
         
     }
-    
-    
-    swichProjectHandler(projectId)
-       {
+    //logic to switchProject when button is clicked
+    switchHandler(switchHandlerFxn)
+    {
+        this.switchHandler=switchHandlerFxn;
+    }
+switchProject(ProjectId)
+    {
+        this.switchHandler(this.Projects.find(p=>p.id==ProjectId))
+        this.Projects=this.Projects.filter(p=>p.id!==ProjectId)
         
-        this.switchHandler(this.Projects.find(p=>p.id==projectId))
-    
-        this.Projects=this.Projects.filter(p=>p.id!==projectId);
-    
-       
-        
-        
-       }
- 
+    }
 
 }
 
-class App
-{
+
+class App{
     static init()
     {
-        const activeProjects=new ProjectList("active");
-        const finishedPorjects=new ProjectList("finished");
-        activeProjects.switchHandlerOutside(finishedPorjects.addProjectHandler.bind(finishedPorjects))
-        finishedPorjects.switchHandlerOutside(activeProjects.addProjectHandler.bind(activeProjects))
-    }
-    
+        const activeProjects=new ProjectList('active');
+        const finishedProjects=new ProjectList('finished');
+        activeProjects.switchHandler(finishedProjects.addProject.bind(finishedProjects));
+        finishedProjects.switchHandler(activeProjects.addProject.bind(activeProjects))
 
+    }
 }
-App.init()
+App.init();
